@@ -1,10 +1,11 @@
 import './styles.js'
 import m from 'mithril'
+import lz from "lz-string"
 
 import app from './app'
 
 import Model from './model'
-import { defaults, createFlemsIoLink } from './state'
+import { defaults, createShareLink, createHashState, circularSafeState } from './state'
 import Actions from './actions'
 import message from './message'
 import hotkeys from './hotkeys'
@@ -37,12 +38,16 @@ function Flems(dom, state = {}, runtimeUrl) {
     onloaded: fn => actions.onloaded = fn,
     getLink: actions.getLink,
     set: actions.setState,
-    redraw: m.redraw
+    redraw: m.redraw,
+    state: state,
+    serialize: ()=> createHashState(state),
+    exportState: ()=> circularSafeState(state)
   }
 }
 
 Flems.defaults = defaults
-Flems.createFlemsIoLink = createFlemsIoLink
+Flems.lz = lz
+Flems.createShareLink = createShareLink
 Flems.version = process.env.FLEMS_VERSION // eslint-disable-line
 
 export default Flems

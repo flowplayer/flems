@@ -35,12 +35,12 @@ export default (model, actions) =>
       title: 'Refresh'
     }),
     model.state.shareButton && m('a' + b.color('inherit'), {
-      href: 'https://flems.io',
+      href: document.location.href,
       target: '_blank',
       oncreate: actions.setShareUrl
     },
       toolbarButton(shareIcon, {
-        title: 'Open / share on flems.io'
+        title: 'share'
       })
     )
   )

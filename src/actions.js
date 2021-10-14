@@ -2,7 +2,7 @@ import m from 'mithril'
 import inspect from 'object-inspect'
 import compilers from './compilers'
 import { ext, findFile } from './utils'
-import { sanitize, createFlemsIoLink } from './state'
+import { sanitize, createShareLink } from './state'
 import { diff, patch } from './dmp'
 import SourceMap from 'source-map'
 
@@ -84,7 +84,7 @@ export default function(model) {
 
   function setShareUrl({ dom }) {
     dom.addEventListener('mousedown', e => {
-      dom.href = createFlemsIoLink(model.state)
+      dom.href = createShareLink(model.state)
     }, true)
   }
 

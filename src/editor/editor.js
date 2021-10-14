@@ -22,10 +22,6 @@ import 'codemirror/addon/fold/brace-fold.js'
 import 'codemirror/addon/fold/xml-fold.js'
 import 'codemirror/addon/fold/comment-fold.js'
 
-import logoIcon from '../icons/logo.svg'
-
-const logoIcon64 = btoa(logoIcon)
-
 const modes = {
   document: {
     name: 'htmlmixed',
@@ -69,10 +65,6 @@ export default (model, actions) =>
       .zIndex(3)
       .opacity(0.1)
       .pointerEvents('none')
-      .backgroundImage('url(data:image/svg+xml;base64,' + logoIcon64 + ')')
-      .backgroundSize('120% auto')
-      .backgroundRepeat('no-repeat')
-      .backgroundPosition('center center')
     )
     .$nest('.CodeMirror',
       b.fontFamily('Source Code Pro, monospace')

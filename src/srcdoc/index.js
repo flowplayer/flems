@@ -1,5 +1,4 @@
 import inspect from 'object-inspect'
-import 'mithril/promise/promise'
 import { endsWith, toposort } from '../utils'
 
 let id = window.name
@@ -78,20 +77,24 @@ window.addEventListener('scroll', () => {
   clearTimeout(scrollTimer)
   scrollTimer = setTimeout(() => send('scroll', [window.scrollX, window.scrollY]), 400)
 }, { passive: true })
-window.addEventListener('message', ({ data }) => {
-  if (data.name === 'init') {
-    init(data.content)
-  } else if (data.name === 'css') {
-    const style = document.getElementById(data.content.name)
-    style
-      ? style.textContent = data.content.content
-      : location.reload()
-  } else if (data.name === 'eval') {
-    try {
-      consoleOutput(cleanLog([window.eval(data.content)]), 'log', { stack: '' }) // eslint-disable-line
-    } catch (err) {
-      consoleOutput(cleanLog([String(err)]), 'error', { stack: '' })
+window.addEventListener('message', async ({ data }) => {
+  try {
+    if (data.name === 'init') {
+      init(data.content)
+    } else if (data.name === 'css') {
+      const style = document.getElementById(data.content.name)
+      style
+        ? style.textContent = data.content.content
+        : location.reload()
+    } else if (data.name === 'eval') {
+      try {
+        consoleOutput(cleanLog([window.eval(data.content)]), 'log', { stack: '' }) // eslint-disable-line
+      } catch (err) {
+        consoleOutput(cleanLog([String(err)]), 'error', { stack: '' })
+      }
     }
+  } catch (err) {
+    console.log(err)
   }
 })
 
@@ -103,9 +106,8 @@ function send(name, content) {
   }, '*')
 }
 
-function init(data) {
+async function init(data) {
   id = data.id
-
   const state = data.state
   const body = state.files.filter(f => endsWith('.html', f.name))[0]
   const title = document.title
@@ -142,31 +144,28 @@ function init(data) {
       , modules = scripts.filter(f => f.module)
       , moduleOrder = getTopology(modules)
 
-  Promise
-    .all(
+  try {
+    await Promise.all(
       state.links
       .filter(l => l.type === 'script')
-      .map(loadRemoteScript)
-      .concat(scriptsInHtml.map(s => s.url
-        ? loadRemoteScript(s)
-        : flemsLoadScript(s)
-      ))
-    )
-    .then(() => Promise.all(scripts
+      .map(loadRemoteScript))
+
+    //console.log(state)
+
+    await Promise.all(
+      scriptsInHtml.map(s => s.url ? loadRemoteScript(s) : flemsLoadScript(s)))
+
+    await Promise.all(scripts
       .filter(f => !f.module)
       .concat(modules.sort((a, b) => moduleOrder.indexOf(a.name) - moduleOrder.indexOf(b.name)))
       .map(flemsLoadScript))
-    )
-    .then((r) => {
-      window.dispatchEvent(createEvent('DOMContentLoaded'))
-      window.dispatchEvent(createEvent('load'))
-      send('loaded')
-      if (state.scroll)
-        window.scrollTo.apply(window, state.scroll)
-    })
-    .catch(err => {
-      consoleOutput('Error loading:\n\t' + (Array.isArray(err) ? err.join('\n') : err), 'error', { stack: '' })
-    })
+    window.dispatchEvent(createEvent('DOMContentLoaded'))
+    window.dispatchEvent(createEvent('load'))
+    send('loaded')
+    if (state.scroll) window.scrollTo.apply(window, state.scroll)
+  } catch (err) {
+    consoleOutput('Error loading:\n\t' + (Array.isArray(err) ? err.join('\n') : err), 'error', { stack: '' })
+  }
 }
 
 function createEvent(eventName) {
@@ -280,9 +279,13 @@ function loadRemoteScript(script) {
     })
 
     if (script.el)
-      Array.prototype.slice.call(script.el.attributes).forEach(a => el.setAttribute(a.name, a.value))
+      Array.prototype.slice.call(script.el.attributes)
+        .forEach(a => el.setAttribute(a.name, a.value))
 
-    el.onload = () => resolve()
+    el.onload = () => {
+      //console.log("loaded script(%s)", script.url)
+      resolve()
+    }
     el.onerror = err => reject([script.url, err])
     script.el
       ? script.el.parentNode.replaceChild(el, script.el)

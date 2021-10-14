@@ -2,7 +2,6 @@ const fs = require('fs')
     , rollup = require('rollup')
     , commonjs = require('rollup-plugin-commonjs')
     , nodeResolve = require('rollup-plugin-node-resolve')
-    , buble = require('rollup-plugin-buble')
     , uglify = require('rollup-plugin-uglify')
 
 
@@ -13,7 +12,7 @@ module.exports = rollup.rollup({
       browser: true
     }),
     commonjs(),
-    buble(),
+    //buble(),
     uglify.uglify({ mangle: { reserved: ['flemsLoadScript'] }, compress: true })
   ]
 })
