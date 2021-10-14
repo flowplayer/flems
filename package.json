@@ -39,5 +39,8 @@
     "rollup-plugin-uglify": "6.0.4",
     "source-map": "0.6.1",
     "wright": "2.0.0-rc1"
+  },
+  "dependencies": {
+    "prettier": "^2.4.1"
   }
 }

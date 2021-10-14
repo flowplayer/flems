@@ -41,7 +41,7 @@ export default (model, actions) =>
 
 function linkTabs(model, actions) {
   return model.state.links.map(link =>
-    tab(
+    link.hidden ? false : tab(
       m('div' + b.d('flex'),
         m('a' + b.c('inherit'), {
           href: link.url,
@@ -71,7 +71,7 @@ function linkTabs(model, actions) {
 
 function fileTabs(model, actions) {
   return model.state.files.map(file =>
-    tab(
+    file.hidden ? false : tab(
       m('div' + b.d('flex'),
         file.name,
         file.editable === false && icon({ size: 16, class: b.ml(6).class }, lockIcon)

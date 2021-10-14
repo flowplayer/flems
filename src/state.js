@@ -88,11 +88,13 @@ export function sanitize(state) {
   return state
 }
 
-export const createFlemsIoLink = state => {
-  return 'https://flems.io/#0=' + lz.compressToEncodedURIComponent(
-    JSON.stringify(clean(state))
-  )
+export const createShareLink = state => {
+  return document.location.href + createHashState(state)
 }
+
+export const createHashState = state => '#0=' + lz.compressToEncodedURIComponent(circularSafeState(state))
+
+export const circularSafeState = state => JSON.stringify(clean(state))
 
 function clean(state) {
   const clean = Object.keys(defaults()).reduce((acc, x) =>
@@ -100,10 +102,10 @@ function clean(state) {
   , {})
 
   if (state.files && state.files.length)
-    clean.files = pluck(state.files, ['name', 'content', 'compiler', 'selections'])
+    clean.files = pluck(state.files, ['name', 'content', 'compiler', 'selections', 'hidden'])
 
   if (state.links)
-    clean.links = pluck(state.links, ['name', 'url', 'type', 'patches', 'selections'])
+    clean.links = pluck(state.links, ['name', 'url', 'type', 'patches', 'selections', 'hidden'])
 
   return clean
 }
