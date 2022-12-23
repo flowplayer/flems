@@ -130,15 +130,18 @@ async function init(data) {
       el: s
     }))
 
-  state
+
+  await Promise.all(state
     .links
     .filter(l => l.type === 'style' && !l.content)
-    .forEach(loadRemoteStyle)
+    .map(loadRemoteStyle))
 
-  state.files
-    .filter(f => f.type === 'style')
-    .concat(state.links.filter(l => l.type === 'style' && l.content))
-    .forEach(loadStyle)
+  const inlineStyles = state.links.filter(l => l.type === 'style' && l.content).concat(state.files
+    .filter(f => f.type === 'style'))
+
+  //console.log("flems/inlineStyles", inlineStyles)
+    
+  inlineStyles.forEach(loadStyle)
 
   const scripts = state.files.filter(f => f.type === 'script').map(moduleCheck)
       , modules = scripts.filter(f => f.module)
@@ -251,11 +254,15 @@ function parseStackLine(string) {
 }
 
 function loadRemoteStyle(style) {
-  document.head.appendChild(create('link', {
-    rel: 'stylesheet',
-    type: 'text/css',
-    href: style.url
-  }))
+  return new Promise((ok, err)=> {
+    const link = create('link', {
+      rel: 'stylesheet',
+      type: 'text/css',
+      href: style.url
+    })
+    link.onload = link.onerror = ok
+    document.head.appendChild(link)
+  })
 }
 
 function loadStyle(css) {
